@@ -30,3 +30,4 @@ python scribe.py
 ## TO DO:
 - [ ] Fix newline style not appearing on pdf due to certain Markdown styles
 - [ ] Better UI
+- [ ] Text style toolbar
