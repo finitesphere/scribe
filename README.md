@@ -1,7 +1,7 @@
 ## Scribe
 A Python based GUI application to write, preview, and export Markdown content as a PDF file.
 
-![](https://github.com/finitesphere/scribe/blob/main/scribe-demo.gif)
+[![Watch the video](demo-thumbnail.jpg)](scribe-demo.mp4)
 
 ## About
 Scribe is a text editor that allows you to write in Markdown with a live preview window and then export your Markdown content as a pdf.
@@ -30,3 +30,4 @@ python scribe.py
 ## TO DO:
 - [ ] Fix newline style not appearing on pdf due to certain Markdown styles
 - [ ] Better UI
+- [ ] 
