@@ -32,3 +32,4 @@ python scribe.py
 - [ ] Better UI
 - [ ] Toolbar
 - [ ] Different UI themes
+- [ ] Emoji support
