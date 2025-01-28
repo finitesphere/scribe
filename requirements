@@ -1,5 +1,8 @@
-tk
-markdown2
-tkhtmlview
-reportlab
 beautifulsoup4
+markdown2
+Pillow
+reportlab
+tkhtmlview
+MarkdownIt-py
+mdit-py-plugins
+PyMuPDF
