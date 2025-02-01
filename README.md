@@ -33,3 +33,4 @@ python scribe.py
 - [ ] Toolbar
 - [ ] Different UI themes
 - [ ] Emoji support
+- [ ] Option to switch from Markdown to LaTeX 
