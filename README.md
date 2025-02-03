@@ -34,3 +34,4 @@ python scribe.py
 - [ ] Different UI themes
 - [ ] Emoji support
 - [ ] Option to switch from Markdown to LaTeX 
+- [ ] Add word autocorrect
