@@ -36,3 +36,4 @@ python scribe.py
 - [ ] Option to switch from Markdown to LaTeX 
 - [ ] Add word autocorrect
 - [ ] Include different fonts
+- [ ] Option to change the color of the text
