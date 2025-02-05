@@ -37,3 +37,4 @@ python scribe.py
 - [ ] Add word autocorrect
 - [ ] Include different fonts
 - [ ] Option to change the color of the text
+- [ ] Image support
