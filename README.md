@@ -38,3 +38,4 @@ python scribe.py
 - [ ] Include different fonts
 - [ ] Option to change the color of the text
 - [ ] Image support
+- [ ] Basic drawing support
