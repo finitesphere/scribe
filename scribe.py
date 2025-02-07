@@ -17,18 +17,25 @@ class Scribe:
         self.root.geometry("800x600")
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
-        self.root.columnconfigure(1, weight=1)
+
+        # Create a PanedWindow
+        self.paned_window = tk.PanedWindow(root, orient=tk.HORIZONTAL)
+        self.paned_window.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
         # Markdown editor
-        self.text_editor = tk.Text(root, wrap="word", font=("Arial", 12))
-        self.text_editor.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.text_editor = tk.Text(self.paned_window, wrap="word", font=("Arial", 12))
+        self.paned_window.add(self.text_editor)
         self.text_editor.bind("<<Modified>>", self.update_preview)
 
         # Preview panel
-        self.preview_frame = ttk.Frame(root)
-        self.preview_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.preview_frame = ttk.Frame(self.paned_window)
+        self.paned_window.add(self.preview_frame)
         self.html_preview = HTMLLabel(self.preview_frame, html="<h1></h1>")
         self.html_preview.pack(fill="both", expand=True)
+
+        # Add this line to make the two panels even initially
+        self.paned_window.paneconfig(self.text_editor, minsize=400)
+        self.paned_window.paneconfig(self.preview_frame, minsize=400)
 
         # Bottom buttons
         self.button_frame = ttk.Frame(root)
@@ -118,9 +125,29 @@ class Scribe:
         frame = tk.Frame(cheat_sheet_window)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
+        # Enable scrolling
+        cheat_sheet_canvas = tk.Canvas(frame)
+        cheat_sheet_scrollbar = ttk.Scrollbar(frame, orient="vertical", command=cheat_sheet_canvas.yview)
+        cheat_sheet_scrollable_frame = ttk.Frame(cheat_sheet_canvas)
+
+        cheat_sheet_scrollable_frame.bind(
+            "<Configure>",
+            lambda e: cheat_sheet_canvas.configure(
+                scrollregion=cheat_sheet_canvas.bbox("all")
+            )
+        )
+
+        cheat_sheet_canvas.create_window((0, 0), window=cheat_sheet_scrollable_frame, anchor="nw")
+        cheat_sheet_canvas.configure(yscrollcommand=cheat_sheet_scrollbar.set)
+
+        cheat_sheet_canvas.bind_all("<MouseWheel>", lambda e: cheat_sheet_canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
+
+        cheat_sheet_canvas.pack(side="left", fill="both", expand=True)
+        cheat_sheet_scrollbar.pack(side="right", fill="y")
+
         for item in cheat_sheet_content:
-            ttk.Label(frame, text=item["style"], font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
-            ttk.Label(frame, text=item["symbol"], font=("Arial", 10), background="#f0f0f0").pack(fill="x", pady=5)
+            ttk.Label(cheat_sheet_scrollable_frame, text=item["style"], font=("Arial", 12, "bold")).pack(anchor="w", pady=5)
+            ttk.Label(cheat_sheet_scrollable_frame, text=item["symbol"], font=("Arial", 10), background="#f0f0f0").pack(fill="x", pady=5)
 
 if __name__ == "__main__":
     root = tk.Tk()
