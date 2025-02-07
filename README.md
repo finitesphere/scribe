@@ -39,3 +39,4 @@ python scribe.py
 - [ ] Option to change the color of the text
 - [ ] Image support
 - [ ] Basic drawing support
+- [ ] Package the software (make a scribe.exe)
