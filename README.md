@@ -32,11 +32,11 @@ python scribe.py
 - [ ] Better UI
 - [ ] Toolbar
 - [ ] Different UI themes
-- [ ] Emoji support
+- [X] Emoji support
 - [ ] Option to switch from Markdown to LaTeX 
 - [ ] Add word autocorrect
 - [ ] Include different fonts
 - [ ] Option to change the color of the text
-- [ ] Image support
+- [X] Image support
 - [ ] Basic drawing support
 - [ ] Package the software (make a scribe.exe)
