@@ -6,9 +6,12 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
 from reportlab.lib.units import inch
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from io import BytesIO
 from bs4 import BeautifulSoup
 from PIL import Image, ImageTk
+import emoji
 
 class Scribe:
     def __init__(self, root):
@@ -18,6 +21,8 @@ class Scribe:
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
 
+        #Register the DejaVu font for emoji support in PDF export
+        pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
         # Create a PanedWindow
         self.paned_window = tk.PanedWindow(root, orient=tk.HORIZONTAL)
         self.paned_window.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
@@ -55,12 +60,16 @@ class Scribe:
     def update_preview(self, event=None):
         if self.text_editor.edit_modified():
             markdown_text = self.text_editor.get("1.0", "end-1c")
+            # Convert emoji aliases (e.g., :smile:) to Unicode
+            markdown_text = emoji.emojize(markdown_text, language='alias')
             rendered_html = markdown2.markdown(markdown_text, extras=["break-on-newline"])
             self.html_preview.set_html(rendered_html)
             self.text_editor.edit_modified(False)
 
     def export_to_pdf(self):
         markdown_text = self.text_editor.get("1.0", "end-1c")
+        # Convert emoji aliases to Unicode emoji
+        markdown_text = emoji.emojize(markdown_text, language='alias')
         rendered_html = markdown2.markdown(markdown_text)
         html_content = BeautifulSoup(rendered_html, "html.parser")
 
@@ -68,15 +77,15 @@ class Scribe:
         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
         styles = getSampleStyleSheet()
 
-        # Define custom styles
+        # Define custom styles using the DejaVu font
         header_styles = {
-            'h1': ParagraphStyle('Header1', parent=styles['Heading1'], fontSize=18, spaceAfter=12),
-            'h2': ParagraphStyle('Header2', parent=styles['Heading2'], fontSize=16, spaceAfter=10),
-            'h3': ParagraphStyle('Header3', parent=styles['Heading3'], fontSize=14, spaceAfter=8),
+            'h1': ParagraphStyle('Header1', parent=styles['Heading1'], fontName='DejaVu', fontSize=18, spaceAfter=12),
+            'h2': ParagraphStyle('Header2', parent=styles['Heading2'], fontName='DejaVu', fontSize=16, spaceAfter=10),
+            'h3': ParagraphStyle('Header3', parent=styles['Heading3'], fontName='DejaVu', fontSize=14, spaceAfter=8),
         }
-        body_style = styles['BodyText']
-        blockquote_style = ParagraphStyle('Blockquote', parent=body_style, leftIndent=20, textColor='grey', italic=True)
-        code_style = ParagraphStyle('Code', fontSize=10, backColor='lightgrey')
+        body_style = ParagraphStyle('BodyText', parent=styles['BodyText'], fontName='Helvetica', fontSize=12)
+        blockquote_style = ParagraphStyle('Blockquote', parent=body_style, leftIndent=20, textColor='grey', italic=True, fontName='DejaVu')
+        code_style = ParagraphStyle('Code', fontName='DejaVu', fontSize=10, backColor='lightgrey')
 
         story = []
 
@@ -120,6 +129,7 @@ class Scribe:
             {"style": "Lists", "symbol": "- Item 1\n- Item 2\n1. Ordered Item"},
             {"style": "Blockquote", "symbol": "> Quote text"},
             {"style": "Code", "symbol": "`Inline code`\n\n```\nBlock code\n```"},
+            {"style": "Emoji", "symbol": ":smile: -> 😄\n:heart: -> ❤️"},
         ]
 
         frame = tk.Frame(cheat_sheet_window)
