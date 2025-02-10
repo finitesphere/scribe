@@ -12,6 +12,7 @@ from io import BytesIO
 from bs4 import BeautifulSoup
 from PIL import Image, ImageTk
 import emoji
+import language_tool_python
 
 class Scribe:
     def __init__(self, root):
@@ -21,54 +22,66 @@ class Scribe:
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
 
-        #Register the DejaVu font for emoji support in PDF export
         pdfmetrics.registerFont(TTFont('DejaVu', 'DejaVuSans.ttf'))
-        # Create a PanedWindow
+
         self.paned_window = tk.PanedWindow(root, orient=tk.HORIZONTAL)
         self.paned_window.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        # Markdown editor
         self.text_editor = tk.Text(self.paned_window, wrap="word", font=("Arial", 12))
         self.paned_window.add(self.text_editor)
         self.text_editor.bind("<<Modified>>", self.update_preview)
 
-        # Preview panel
         self.preview_frame = ttk.Frame(self.paned_window)
         self.paned_window.add(self.preview_frame)
         self.html_preview = HTMLLabel(self.preview_frame, html="<h1></h1>")
         self.html_preview.pack(fill="both", expand=True)
 
-        # Add this line to make the two panels even initially
         self.paned_window.paneconfig(self.text_editor, minsize=400)
         self.paned_window.paneconfig(self.preview_frame, minsize=400)
 
-        # Bottom buttons
         self.button_frame = ttk.Frame(root)
         self.button_frame.grid(row=1, column=0, columnspan=2, pady=10, sticky="se")
-        
-        # Load images for buttons and resize them
-        self.export_image = Image.open("export.png").resize((50, 50), Image.LANCZOS) 
+
+        self.export_image = Image.open("export.png").resize((50, 50), Image.LANCZOS)
         self.export_photo = ImageTk.PhotoImage(self.export_image)
 
-        self.cheat_sheet_image = Image.open("cheatsheet.png").resize((50, 50), Image.LANCZOS) 
+        self.cheat_sheet_image = Image.open("cheatsheet.png").resize((50, 50), Image.LANCZOS)
         self.cheat_sheet_photo = ImageTk.PhotoImage(self.cheat_sheet_image)
-        
-        # Create buttons with images instead of text
+
+        self.grammar_check_image = Image.open("grammar-check.png").resize((50, 50), Image.LANCZOS)
+        self.grammar_check_photo = ImageTk.PhotoImage(self.grammar_check_image)
+
         ttk.Button(self.button_frame, image=self.export_photo, command=self.export_to_pdf).pack(side="right", padx=5)
         ttk.Button(self.button_frame, image=self.cheat_sheet_photo, command=self.open_cheat_sheet).pack(side="right")
+        ttk.Button(self.button_frame, image=self.grammar_check_photo, command=self.check_grammar).pack(side="left", padx=5)
+
+        self.tool = language_tool_python.LanguageTool('en-US')
 
     def update_preview(self, event=None):
+        """Update the HTML preview panel with the rendered Markdown."""
         if self.text_editor.edit_modified():
             markdown_text = self.text_editor.get("1.0", "end-1c")
-            # Convert emoji aliases (e.g., :smile:) to Unicode
             markdown_text = emoji.emojize(markdown_text, language='alias')
             rendered_html = markdown2.markdown(markdown_text, extras=["break-on-newline"])
             self.html_preview.set_html(rendered_html)
             self.text_editor.edit_modified(False)
+    def check_grammar(self):
+        """Check grammar using LanguageTool and highlight errors in the editor."""
+        text = self.text_editor.get("1.0", "end-1c")
+        matches = self.tool.check(text)
+        
+        self.text_editor.tag_remove("grammar_error", "1.0", "end")
+
+        for match in matches:
+            start = f"1.0+{match.offset}c"
+            end = f"1.0+{match.offset + match.errorLength}c"
+            self.text_editor.tag_add("grammar_error", start, end)
+
+        self.text_editor.tag_config("grammar_error", background="yellow", underline=True)
 
     def export_to_pdf(self):
+        """Export the current text content to a PDF with styled content."""
         markdown_text = self.text_editor.get("1.0", "end-1c")
-        # Convert emoji aliases to Unicode emoji
         markdown_text = emoji.emojize(markdown_text, language='alias')
         rendered_html = markdown2.markdown(markdown_text)
         html_content = BeautifulSoup(rendered_html, "html.parser")
@@ -77,7 +90,6 @@ class Scribe:
         doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
         styles = getSampleStyleSheet()
 
-        # Define custom styles using the DejaVu font
         header_styles = {
             'h1': ParagraphStyle('Header1', parent=styles['Heading1'], fontName='DejaVu', fontSize=18, spaceAfter=12),
             'h2': ParagraphStyle('Header2', parent=styles['Heading2'], fontName='DejaVu', fontSize=16, spaceAfter=10),
@@ -90,7 +102,6 @@ class Scribe:
         story = []
 
         def process_list(element, bullet_type):
-            """Helper to process ordered and unordered lists."""
             items = [ListItem(Paragraph(li.get_text(), body_style)) for li in element.find_all('li')]
             return ListFlowable(items, bulletType=bullet_type)
 
@@ -119,6 +130,7 @@ class Scribe:
             print(f"Error exporting PDF: {e}")
 
     def open_cheat_sheet(self):
+        """Open a cheat sheet for Markdown syntax in a new window."""
         cheat_sheet_window = tk.Toplevel(self.root)
         cheat_sheet_window.title("Markdown Cheat Sheet")
         cheat_sheet_window.geometry("600x400")
@@ -135,22 +147,14 @@ class Scribe:
         frame = tk.Frame(cheat_sheet_window)
         frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Enable scrolling
         cheat_sheet_canvas = tk.Canvas(frame)
         cheat_sheet_scrollbar = ttk.Scrollbar(frame, orient="vertical", command=cheat_sheet_canvas.yview)
         cheat_sheet_scrollable_frame = ttk.Frame(cheat_sheet_canvas)
 
-        cheat_sheet_scrollable_frame.bind(
-            "<Configure>",
-            lambda e: cheat_sheet_canvas.configure(
-                scrollregion=cheat_sheet_canvas.bbox("all")
-            )
-        )
-
+        cheat_sheet_scrollable_frame.bind("<Configure>", lambda e: cheat_sheet_canvas.configure(scrollregion=cheat_sheet_canvas.bbox("all")))
         cheat_sheet_canvas.create_window((0, 0), window=cheat_sheet_scrollable_frame, anchor="nw")
         cheat_sheet_canvas.configure(yscrollcommand=cheat_sheet_scrollbar.set)
-
-        cheat_sheet_canvas.bind_all("<MouseWheel>", lambda e: cheat_sheet_canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
+        cheat_sheet_canvas.bind_all("<MouseWheel>", lambda e: cheat_sheet_canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
 
         cheat_sheet_canvas.pack(side="left", fill="both", expand=True)
         cheat_sheet_scrollbar.pack(side="right", fill="y")
