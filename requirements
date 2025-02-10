@@ -1,8 +1,7 @@
-beautifulsoup4
+tkinterweb
+language-tool-python
 markdown2
-Pillow
+beautifulsoup4
 reportlab
-tkhtmlview
-MarkdownIt-py
-mdit-py-plugins
-PyMuPDF
+Pillow
+emoji
