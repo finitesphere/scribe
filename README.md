@@ -40,3 +40,4 @@ python scribe.py
 - [X] Image support
 - [ ] Basic drawing support
 - [ ] Package the software (make a scribe.exe)
+- [ ] Include a variety of fonts
