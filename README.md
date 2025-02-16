@@ -41,3 +41,4 @@ python scribe.py
 - [ ] Basic drawing support
 - [ ] Package the software (make a scribe.exe)
 - [ ] Include a variety of fonts
+- [ ] Can convert complete Markdown files to PDF as an option
