@@ -42,3 +42,4 @@ python scribe.py
 - [ ] Package the software (make a scribe.exe)
 - [ ] Include a variety of fonts
 - [ ] Can convert complete Markdown files to PDF as an option
+- [ ] Polished icons/other UI components
