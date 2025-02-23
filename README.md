@@ -45,3 +45,4 @@ python scribe.py
 - [ ] Polished icons/other UI components
 - [ ] Markdown math support
 - [ ] Key shortcuts
+- [ ] Separate PDF viewer within in the software
