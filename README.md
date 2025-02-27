@@ -46,3 +46,4 @@ python scribe.py
 - [ ] Markdown math support
 - [ ] Key shortcuts
 - [ ] Separate PDF viewer within in the software
+- [ ] Change font size
